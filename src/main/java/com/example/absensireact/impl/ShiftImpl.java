@@ -72,18 +72,19 @@ public class ShiftImpl implements ShiftService {
         return shiftRepository.findById(user.getShift().getId());
     }
     @Override
-    public Shift PostShift(Long idAdmin, Shift shift){
-        Optional<Admin> admin1 = adminRepository.findById(idAdmin);
-        if (admin1.isPresent()) {
-            Admin admin = admin1.get();
+    public Shift PostShift(Long idAdmin, Shift shift) {
+        Optional<Admin> adminOptional = adminRepository.findById(idAdmin);
+        if (adminOptional.isPresent()) {
+            Admin admin = adminOptional.get();
+            shift.setAdmin(admin);
             shift.setNamaShift(shift.getNamaShift());
             shift.setWaktuMasuk(shift.getWaktuMasuk());
             shift.setWaktuPulang(shift.getWaktuPulang());
-            shift.setAdmin(admin);
             return shiftRepository.save(shift);
         }
-       throw new NotFoundException("Organisasi tidak ditemukan ");
+        throw new NotFoundException("Admin tidak ditemukan");
     }
+
 
     @Override
     public Shift editShiftById(Long id, Shift updatedShift) {
