@@ -2,7 +2,10 @@ package com.example.absensireact.controller;
 
 
 import com.example.absensireact.config.AppConfig;
+import com.example.absensireact.dto.ForGotPass;
 import com.example.absensireact.dto.PasswordDTO;
+import com.example.absensireact.dto.ResetPassDTO;
+import com.example.absensireact.exception.BadRequestException;
 import com.example.absensireact.exception.CommonResponse;
 import com.example.absensireact.exception.NotFoundException;
 import com.example.absensireact.exception.ResponseHelper;
@@ -18,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
@@ -38,13 +42,35 @@ public class UserController {
     @Autowired
     private AdminRepository adminRepository;
 
-
-
     @Autowired
     private AppConfig appConfig;
 
 
+    @PostMapping("/user/validasi-code")
+    public void requestPasswordReset(@RequestBody ResetPassDTO resetPassDTO) {
+        try {
+            userImpl.validasiCodeUniqResPass(resetPassDTO);
+        } catch (NotFoundException e) {
+            throw new BadRequestException("Invalid reset code or email.");
+        }
+    }
 
+    @PutMapping("/user/ubahPassByForgot")
+    public void resetPassword(@RequestBody ResetPassDTO resetPassDTO) {
+        try {
+            userImpl.ubahPassByForgot(resetPassDTO);
+        } catch (NotFoundException e) {
+            throw new BadRequestException("Email not found.");
+        } catch (BadRequestException e) {
+            throw new BadRequestException("Password does not match.");
+        }
+    }
+
+    @PostMapping("/user/forgot_password")
+    public CommonResponse<ForGotPass> sendEmail(@RequestBody ForGotPass forGotPass) throws MessagingException {
+        return ResponseHelper.ok(userImpl.sendEmail(forGotPass));
+
+    }
     @PostMapping("/user/register")
     public ResponseEntity<User> registerUser(@RequestBody User user, @RequestParam Long idOrganisasi , @RequestParam Long idShift) {
         User newUser = userImpl.Register(user, idOrganisasi , idShift);

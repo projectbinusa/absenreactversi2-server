@@ -1,13 +1,15 @@
 package com.example.absensireact.service;
 
+import com.example.absensireact.dto.ForGotPass;
 import com.example.absensireact.dto.PasswordDTO;
-import com.example.absensireact.model.Organisasi;
+import com.example.absensireact.dto.ResetPassDTO;
+import com.example.absensireact.model.Reset_Password;
 import com.example.absensireact.model.User;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.mail.MessagingException;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 public interface UserService {
 
@@ -15,6 +17,12 @@ public interface UserService {
 
 //    User Register(User user);
 
+
+    User ubahPassByForgot(ResetPassDTO updatePass);
+
+    Reset_Password validasiCodeUniqResPass(ResetPassDTO codeUser);
+
+    ForGotPass sendEmail(ForGotPass forGotPass) throws MessagingException;
 
     User Register(User user, Long idOrganisasi, Long idShift);
 
