@@ -5,6 +5,7 @@ import com.example.absensireact.config.AppConfig;
 import com.example.absensireact.dto.ForGotPass;
 import com.example.absensireact.dto.PasswordDTO;
 import com.example.absensireact.dto.ResetPassDTO;
+import com.example.absensireact.dto.VerifyCode;
 import com.example.absensireact.exception.BadRequestException;
 import com.example.absensireact.exception.CommonResponse;
 import com.example.absensireact.exception.NotFoundException;
@@ -47,9 +48,9 @@ public class UserController {
 
 
     @PostMapping("/user/validasi-code")
-    public void requestPasswordReset(@RequestBody ResetPassDTO resetPassDTO) {
+    public void requestPasswordReset(@RequestBody VerifyCode verifyCode) {
         try {
-            userImpl.validasiCodeUniqResPass(resetPassDTO);
+            userImpl.validasiCodeUniqResPass(verifyCode);
         } catch (NotFoundException e) {
             throw new BadRequestException("Invalid reset code or email.");
         }
