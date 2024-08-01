@@ -3,6 +3,7 @@ package com.example.absensireact.service;
 import com.example.absensireact.dto.ForGotPass;
 import com.example.absensireact.dto.PasswordDTO;
 import com.example.absensireact.dto.ResetPassDTO;
+import com.example.absensireact.dto.VerifyCode;
 import com.example.absensireact.model.Reset_Password;
 import com.example.absensireact.model.User;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,7 +21,8 @@ public interface UserService {
 
     User ubahPassByForgot(ResetPassDTO updatePass);
 
-    Reset_Password validasiCodeUniqResPass(ResetPassDTO codeUser);
+
+    Reset_Password validasiCodeUniqResPass(VerifyCode codeUser);
 
     ForGotPass sendEmail(ForGotPass forGotPass) throws MessagingException;
 

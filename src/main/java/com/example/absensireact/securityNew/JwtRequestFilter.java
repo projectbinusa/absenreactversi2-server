@@ -1,41 +1,25 @@
 package com.example.absensireact.securityNew;
 
-import com.example.absensireact.detail.AdminDetail;
 import com.example.absensireact.detail.CustomUserDetails;
-import com.example.absensireact.detail.SuperAdminDetail;
-import com.example.absensireact.detail.UserDetail;
-import com.example.absensireact.exception.BadRequestException;
-import com.example.absensireact.exception.NotFoundException;
-import com.example.absensireact.model.Admin;
-import com.example.absensireact.model.SuperAdmin;
-import com.example.absensireact.model.User;
 import com.example.absensireact.repository.AdminRepository;
 import com.example.absensireact.repository.SuperAdminRepository;
 import com.example.absensireact.repository.UserRepository;
 import com.example.absensireact.service.AuthService;
-import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {

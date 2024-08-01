@@ -4,6 +4,7 @@ import com.example.absensireact.config.AppConfig;
 import com.example.absensireact.dto.ForGotPass;
 import com.example.absensireact.dto.PasswordDTO;
 import com.example.absensireact.dto.ResetPassDTO;
+import com.example.absensireact.dto.VerifyCode;
 import com.example.absensireact.exception.BadRequestException;
 import com.example.absensireact.exception.NotFoundException;
 import com.example.absensireact.model.*;
@@ -41,6 +42,9 @@ public class UserImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SuperAdminImpl superAdminimpl;
 
     @Autowired
     private AdminRepository adminRepository;
@@ -107,7 +111,7 @@ public class UserImpl implements UserService {
             throw new BadRequestException("Password tidak sesuai");
         }    }
     @Override
-    public Reset_Password validasiCodeUniqResPass(ResetPassDTO codeUser){
+    public Reset_Password validasiCodeUniqResPass(VerifyCode codeUser){
         Reset_Password reset_password = resetPasswordRepository.findByEmailandCode(codeUser.getEmail() , codeUser.getCode())
                 .orElseThrow(() -> new NotFoundException("email dan code tidak ditemukan"));
         return reset_password;

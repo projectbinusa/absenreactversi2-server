@@ -1,20 +1,12 @@
 package com.example.absensireact.dto;
 
 public class ResetPassDTO {
-    private String code;
     private String email;
 
     private String new_password;
 
     private String confirm_new_password;
 
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
 
     public String getEmail() {
         return email;

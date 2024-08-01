@@ -24,14 +24,10 @@ public interface UserRepository extends JpaRepository<User , Long> {
     @Query(value = "SELECT * FROM user WHERE id_admin = :adminId" , nativeQuery = true)
     List<User> findByadminIdAbsensi (Long adminId);
 
-    List<User> findByJabatan (Jabatan jabatan);
-    List<User> findByAdmin(Admin admin);
-
-    List<User>findByShift (Shift shift);
     @Query(value = "SELECT * FROM user WHERE id_shift = :idShift" , nativeQuery = true)
     List<User> findByIdShift(Long idShift);
 
-    Optional<User> findByEmailAndUsername(String email, String username);
+
     @Query(value = "SELECT * FROM user WHERE email = :email", nativeQuery = true)
     Optional<User> findByEmail(String email);
     Boolean existsByEmail(String email);
@@ -40,8 +36,7 @@ public interface UserRepository extends JpaRepository<User , Long> {
     @Query(value = "SELECT * FROM user WHERE username = :username", nativeQuery = true)
     Optional<User> findByUsername (String username);
 
-    @Query(value = "SELECT * FROM user WHERE id_admin = :idAdmin", nativeQuery = true)
-    Optional<User> findByIdAdminAbsensi (Long idAdmin);
+
 
 
 }

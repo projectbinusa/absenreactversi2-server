@@ -56,7 +56,7 @@ public class AbsensiController {
     private ExcelAbsensiMingguan excelAbsensiMingguan;
 
     @GetMapping("/absensi/export/absensi-bulanan-simpel")
-    public void exportAbsensiBulananSimpel(@RequestParam("month") int month,@RequestParam("year") int year ,HttpServletResponse response) throws IOException {
+    public void exportAbsensiBulananSimpel(@RequestParam("month") int month,@RequestParam("year") int year ,HttpServletResponse response) throws IOException, ParseException {
         excelAbsensiBulanan.excelAbsensiBulananSimpel(month, year,response);
     }
    @GetMapping("/absensi/export/absensi-rekapan-perkaryawan")
