@@ -5,6 +5,7 @@ import com.example.absensireact.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import java.time.LocalDate;
 
 import java.util.Date;
 import java.util.List;
@@ -13,6 +14,8 @@ import java.util.Optional;
 public interface AbsensiRepository extends JpaRepository<Absensi , Long> {
 
     Optional<Absensi> findByUserAndTanggalAbsen(User user, Date tanggalAbsen);
+
+    Optional<Absensi> findByUserIdAndTanggalAbsen(Long userId, LocalDate tanggalAbsen);
 
     @Query("SELECT a FROM Absensi a WHERE a.tanggalAbsen BETWEEN :tanggalAwal AND :tanggalAkhir")
     List<Absensi> findByMingguan(@Param("tanggalAwal") Date tanggalAwal, @Param("tanggalAkhir") Date tanggalAkhir);
