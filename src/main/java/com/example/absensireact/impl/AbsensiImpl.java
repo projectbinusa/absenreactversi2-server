@@ -10,13 +10,19 @@ import com.example.absensireact.repository.AdminRepository;
 import com.example.absensireact.repository.ShiftRepository;
 import com.example.absensireact.repository.UserRepository;
 import com.example.absensireact.service.AbsensiService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityNotFoundException;
@@ -32,6 +38,8 @@ import java.util.logging.Logger;
 @Service
 public class AbsensiImpl implements AbsensiService {
     static final String DOWNLOAD_URL = "https://firebasestorage.googleapis.com/v0/b/absensireact.appspot.com/o/%s?alt=media";
+
+    private static final String BASE_URL = "https://s3.lynk2.co/api/s3";
 
     private static final Logger logger = Logger.getLogger(AbsensiService.class.getName());
 
@@ -180,7 +188,7 @@ public class AbsensiImpl implements AbsensiService {
             absensi.setKeteranganTerlambat(keteranganTerlambat != null ? keteranganTerlambat : "-");
             absensi.setStatusAbsen(keterangan);
 
-            absensi.setFotoMasuk(uploadFile(image, "foto_masuk_" + userId));
+            absensi.setFotoMasuk(uploadFoto(image));
 
             return absensiRepository.save(absensi);
         }
@@ -214,7 +222,7 @@ public class AbsensiImpl implements AbsensiService {
         absensi.setKeteranganPulangAwal(keteranganPulangAwal != null ? keteranganPulangAwal : "-");
         absensi.setJamPulang(jamPulangString);
         absensi.setLokasiPulang(lokasiPulang);
-        absensi.setFotoPulang(uploadFile(image, "foto_pulang_" + userId));
+        absensi.setFotoPulang(uploadFotoPUlang(image));
 
         return absensiRepository.save(absensi);
     }
@@ -225,6 +233,36 @@ public class AbsensiImpl implements AbsensiService {
         Optional<Absensi> absensi = absensiRepository.findByUserIdAndTanggalAbsen(userId, truncateTime(new Date()));
         return absensi.isPresent();
     }
+
+    @Override
+    public boolean checkUserAlreadyIzinToday(Long userId) {
+        Optional<Absensi> absensi = absensiRepository.findByUserIdAndTanggalAbsen(userId, truncateTime(new Date()));
+
+        if (absensi.isPresent()) {
+            Absensi absensi1 = absensi.get();
+            if (absensi1.getStatusAbsen().equalsIgnoreCase("Izin")) {
+                throw new NotFoundException("User sudah melakukan Izin hari ini");
+            }
+        }
+
+        return absensi.isPresent();
+    }
+
+    @Override
+    public boolean checkUserAlreadyIzinTengahHariToday(Long userId) {
+        Optional<Absensi> absensi = absensiRepository.findByUserIdAndTanggalAbsen(userId, truncateTime(new Date()));
+
+        if (absensi.isPresent()) {
+            Absensi absensi1 = absensi.get();
+            if (absensi1.getStatusAbsen().equalsIgnoreCase("Izin Tengah Hari")) {
+                throw new NotFoundException("User sudah melakukan Izin Tengah hari ");
+            }
+        }
+
+        return absensi.isPresent();
+    }
+
+
 
     @Override
     public Absensi izin(Long userId, String keteranganIzin) {
@@ -348,28 +386,41 @@ public class AbsensiImpl implements AbsensiService {
         return true;
     }
 
-    private String uploadFile(MultipartFile multipartFile, String fileName) throws IOException {
-        String timestamp = String.valueOf(System.currentTimeMillis());
-        String folderPath = "fotoAbsen/fotoMasuk/";
-        String fullPath = folderPath + timestamp + "_" + fileName;
-        BlobId blobId = BlobId.of("absensireact.appspot.com", fullPath);
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("media").build();
-        Credentials credentials = GoogleCredentials.fromStream(new FileInputStream("./src/main/resources/FirebaseConfig.json"));
-        Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
-        storage.create(blobInfo, multipartFile.getBytes());
-        return String.format(DOWNLOAD_URL, URLEncoder.encode(fullPath, StandardCharsets.UTF_8));
+    private String uploadFoto(MultipartFile multipartFile) throws IOException {
+        RestTemplate restTemplate = new RestTemplate();
+        String base_url = "https://s3.lynk2.co/api/s3/absenMasuk";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", multipartFile.getResource());
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+        ResponseEntity<String> response = restTemplate.exchange(base_url, HttpMethod.POST, requestEntity, String.class);
+        String fileUrl = extractFileUrlFromResponse(response.getBody());
+        return fileUrl;
     }
 
-    private String uploadFilePulang(MultipartFile multipartFile, String fileName) throws IOException {
-        String timestamp = String.valueOf(System.currentTimeMillis());
-        String folderPath = "fotoAbsen/fotoPulang/";
-        String fullPath = folderPath + timestamp + "_" + fileName;
-        BlobId blobId = BlobId.of("absensireact.appspot.com", fullPath);
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("media").build();
-        Credentials credentials = GoogleCredentials.fromStream(new FileInputStream("./src/main/resources/FirebaseConfig.json"));
-        Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
-        storage.create(blobInfo, multipartFile.getBytes());
-        return String.format(DOWNLOAD_URL, URLEncoder.encode(fullPath, StandardCharsets.UTF_8));
+    private String uploadFotoPUlang(MultipartFile multipartFile) throws IOException {
+        RestTemplate restTemplate = new RestTemplate();
+        String base_url = "https://s3.lynk2.co/api/s3/absenPulang";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", multipartFile.getResource());
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+        ResponseEntity<String> response = restTemplate.exchange(base_url, HttpMethod.POST, requestEntity, String.class);
+        String fileUrl = extractFileUrlFromResponse(response.getBody());
+        return fileUrl;
+    }
+
+    private String extractFileUrlFromResponse(String responseBody) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonResponse = mapper.readTree(responseBody);
+        JsonNode dataNode = jsonResponse.path("data");
+        String urlFile = dataNode.path("url_file").asText();
+
+        return urlFile;
     }
 
 }
