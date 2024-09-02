@@ -202,6 +202,22 @@ public class AbsensiController {
             return ResponseEntity.status(HttpStatus.OK).body("Pengguna belum melakukan absensi hari ini.");
         }
     }
+    @GetMapping("/absensi/cheskIzin/{userId}")
+    public ResponseEntity<String> checkIzinToday(@PathVariable Long userId) {
+        if (absensiService.checkUserAlreadyIzinToday(userId)) {
+            return ResponseEntity.status(HttpStatus.OK).body("Pengguna sudah melakukan Izin hari ini.");
+        } else {
+            return ResponseEntity.status(HttpStatus.OK).body("Pengguna belum melakukan izin hari ini.");
+        }
+    }
+    @GetMapping("/absensi/cheskIzinTengahHari/{userId}")
+    public ResponseEntity<String> checkIzinTengahHariToday(@PathVariable Long userId) {
+        if (absensiService.checkUserAlreadyIzinTengahHariToday(userId)) {
+            return ResponseEntity.status(HttpStatus.OK).body("Pengguna sudah melakukan Izin Tengah hari .");
+        } else {
+            return ResponseEntity.status(HttpStatus.OK).body("Pengguna belum melakukan izin Tengah hari .");
+        }
+    }
     @GetMapping("/absensi/getAll")
     public ResponseEntity<List<Absensi>> getAllAbsensi() {
         List<Absensi> allAbsensi = absensiService.getAllAbsensi();
@@ -220,8 +236,8 @@ public class AbsensiController {
     }
 
     @PostMapping("/absensi/izin/{userId}")
-    public Absensi izin(@PathVariable Long userId, @RequestBody Map<String, String> body) {
-        String keteranganIzin = body.get("keteranganIzin");
+    public Absensi izin(@PathVariable Long userId, @RequestParam String keteranganIzin) {
+
         return absensiService.izin(userId, keteranganIzin);
     }
     @PutMapping("/absensi/izin-tengah-hari/{userId}")

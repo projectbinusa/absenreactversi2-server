@@ -39,6 +39,10 @@ public interface  AbsensiService {
 
     boolean checkUserAlreadyAbsenToday(Long userId);
 
+    boolean checkUserAlreadyIzinToday(Long userId);
+
+    boolean checkUserAlreadyIzinTengahHariToday(Long userId);
+
     Absensi izin(Long userId, String keteranganIzin)  ;
 
     Absensi izinTengahHari(Long userId, String keteranganPulangAwal)  ;
