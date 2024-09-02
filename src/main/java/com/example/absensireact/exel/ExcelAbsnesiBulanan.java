@@ -42,18 +42,24 @@ public class ExcelAbsnesiBulanan {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Absensi-Bulanan");
 
-        Font fontWhite = workbook.createFont();
-        fontWhite.setColor(IndexedColors.WHITE.getIndex()); // Set font color to white
+        // Define font color for header
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setColor(IndexedColors.WHITE.getIndex());
 
-        // Cell styles
+        // Cell style for header with light blue background and white font
         CellStyle styleHeader = workbook.createCellStyle();
         styleHeader.setAlignment(HorizontalAlignment.CENTER);
         styleHeader.setVerticalAlignment(VerticalAlignment.CENTER);
+        styleHeader.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+        styleHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         styleHeader.setBorderTop(BorderStyle.THIN);
         styleHeader.setBorderRight(BorderStyle.THIN);
         styleHeader.setBorderBottom(BorderStyle.THIN);
         styleHeader.setBorderLeft(BorderStyle.THIN);
+        styleHeader.setFont(headerFont);
 
+        // Style for title (remains unchanged)
         CellStyle styleTitle = workbook.createCellStyle();
         styleTitle.setAlignment(HorizontalAlignment.CENTER);
         styleTitle.setVerticalAlignment(VerticalAlignment.CENTER);
@@ -61,6 +67,7 @@ public class ExcelAbsnesiBulanan {
         titleFont.setBold(true);
         styleTitle.setFont(titleFont);
 
+        // Style for center-aligned cells with borders
         CellStyle styleCenterNumber = workbook.createCellStyle();
         styleCenterNumber.setAlignment(HorizontalAlignment.CENTER);
         styleCenterNumber.setVerticalAlignment(VerticalAlignment.CENTER);
@@ -69,7 +76,7 @@ public class ExcelAbsnesiBulanan {
         styleCenterNumber.setBorderBottom(BorderStyle.THIN);
         styleCenterNumber.setBorderLeft(BorderStyle.THIN);
 
-        // Define style for weekends and no data
+        // Style for weekends with light blue background and borders
         CellStyle styleWeekend = workbook.createCellStyle();
         styleWeekend.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
         styleWeekend.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -78,13 +85,16 @@ public class ExcelAbsnesiBulanan {
         styleWeekend.setBorderBottom(BorderStyle.THIN);
         styleWeekend.setBorderLeft(BorderStyle.THIN);
 
-        CellStyle styleNoData = workbook.createCellStyle();
-        styleNoData.setFillForegroundColor(IndexedColors.RED.getIndex());
-        styleNoData.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        styleNoData.setBorderTop(BorderStyle.THIN);
-        styleNoData.setBorderRight(BorderStyle.THIN);
-        styleNoData.setBorderBottom(BorderStyle.THIN);
-        styleNoData.setBorderLeft(BorderStyle.THIN);
+        // Style for cells containing "X" with bright red background
+        CellStyle styleRedX = workbook.createCellStyle();
+        styleRedX.setFillForegroundColor(IndexedColors.RED.getIndex());
+        styleRedX.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        styleRedX.setAlignment(HorizontalAlignment.CENTER);
+        styleRedX.setVerticalAlignment(VerticalAlignment.CENTER);
+        styleRedX.setBorderTop(BorderStyle.THIN);
+        styleRedX.setBorderRight(BorderStyle.THIN);
+        styleRedX.setBorderBottom(BorderStyle.THIN);
+        styleRedX.setBorderLeft(BorderStyle.THIN);
 
         // Fetch data
         List<Absensi> absensiList = absensiRepository.findByMonthAndYear(month, year);
@@ -99,7 +109,7 @@ public class ExcelAbsnesiBulanan {
             Row emptyRow = sheet.createRow(0);
             Cell emptyCell = emptyRow.createCell(0);
             emptyCell.setCellValue("Tidak ada data absensi untuk bulan " + getMonthName(month) + " tahun " + year);
-            emptyCell.setCellStyle(styleNoData); // Apply style for no data
+            emptyCell.setCellStyle(styleCenterNumber);
             sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, daysInMonth + 1)); // Merge cells for message
         } else {
             // Group by user
@@ -143,8 +153,13 @@ public class ExcelAbsnesiBulanan {
 
                 // User row
                 Row userRow = sheet.createRow(rowNum++);
-                userRow.createCell(0).setCellValue(userRowNum++);
-                userRow.createCell(1).setCellValue(userName);
+                Cell noCell = userRow.createCell(0);
+                noCell.setCellValue(userRowNum++);
+                noCell.setCellStyle(styleCenterNumber); // Border for No column
+
+                Cell nameCell = userRow.createCell(1);
+                nameCell.setCellValue(userName);
+                nameCell.setCellStyle(styleCenterNumber); // Border for Name column
 
                 // Initialize date columns
                 Calendar dateCal = Calendar.getInstance();
@@ -177,19 +192,36 @@ public class ExcelAbsnesiBulanan {
                             }
                         } else {
                             cellForDate.setCellValue("X"); // Mark no data with "X"
-                            cellForDate.setCellStyle(styleNoData); // Red background for no data
+                            cellForDate.setCellStyle(styleRedX); // Red background for "X"
                         }
                     }
                     cellForDate.setCellStyle(styleCenterNumber); // Center alignment and border
                 }
             }
 
-            // Set the column width for the Name column to be wider
-            sheet.setColumnWidth(1, 50 * 256); // Adjust the multiplier (256) to fit your needs
-
-            for (int i = 0; i <= daysInMonth + 1; i++) {
-                sheet.autoSizeColumn(i);
+            // Set specific column widths
+            sheet.setColumnWidth(0, 5 * 256); // Column No: 10 width
+            sheet.setColumnWidth(1, 25 * 256); // Column Name: 50 width
+            for (int i = 2; i <= daysInMonth + 1; i++) {
+                sheet.setColumnWidth(i, 5 * 256); // Column Date: 20 width
             }
+
+            // Adding the notes at the bottom of the table
+            Row noteRow1 = sheet.createRow(rowNum++);
+            Cell noteCell1 = noteRow1.createCell(0);
+            noteCell1.setCellValue("X = tidak absen");
+
+            Row noteRow2 = sheet.createRow(rowNum++);
+            Cell noteCell2 = noteRow2.createCell(0);
+            noteCell2.setCellValue("✓ = absen");
+
+            Row noteRow3 = sheet.createRow(rowNum++);
+            Cell noteCell3 = noteRow3.createCell(0);
+            noteCell3.setCellValue("- = hari libur");
+
+            Row noteRow4 = sheet.createRow(rowNum++);
+            Cell noteCell4 = noteRow4.createCell(0);
+            noteCell4.setCellValue("i = izin");
 
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename=AbsensiBulanan_" + getMonthName(month) + "_" + year + ".xlsx");
@@ -198,25 +230,26 @@ public class ExcelAbsnesiBulanan {
         }
     }
 
-        private boolean isSameDay(Date date1, Date date2) {
-            Calendar cal1 = Calendar.getInstance();
-            cal1.setTime(date1);
+    private boolean isSameDay(Date date1, Date date2) {
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTime(date1);
 
-            Calendar cal2 = Calendar.getInstance();
-            cal2.setTime(date2);
+        Calendar cal2 = Calendar.getInstance();
+        cal2.setTime(date2);
 
-            return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
-                    cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH) &&
-                    cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH);
-        }
-
-
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH) &&
+                cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH);
+    }
 
 
 
 
 
-        public void excelAbsensiBulananSimpel(int month, int year, HttpServletResponse response) throws IOException, ParseException {
+
+
+
+    public void excelAbsensiBulananSimpel(int month, int year, HttpServletResponse response) throws IOException, ParseException {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Absensi-Simpel");
 
