@@ -49,12 +49,13 @@ public class LemburImpl implements LemburService {
         if (userLembur == null) {
             throw new NotFoundException("User id tidak ditemukan");
         }
+
         lembur.setTanggalLembur(lembur.getTanggalLembur());
         lembur.setJamMulai(lembur.getJamMulai());
         lembur.setJamSelesai(lembur.getJamSelesai());
         lembur.setKeteranganLembur(lembur.getKeteranganLembur());
         lembur.setUser(userLembur);
-        lembur.setNama(lembur.getNama());
+        lembur.setNama(userLembur.getUsername());
         return lemburRepository.save(lembur);
     }
 
