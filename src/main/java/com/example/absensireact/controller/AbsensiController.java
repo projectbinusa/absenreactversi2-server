@@ -27,7 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api")
 public class AbsensiController {

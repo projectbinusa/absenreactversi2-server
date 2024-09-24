@@ -15,7 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api")
 public class LemburController {

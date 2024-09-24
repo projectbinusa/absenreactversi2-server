@@ -13,6 +13,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tokens")
+@CrossOrigin(origins = "*")
 public class TokenController {
 
     @Autowired
